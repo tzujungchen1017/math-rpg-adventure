@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>算術王國：四則冒險 RPG</title>
+<style>
+:root{--ink:#25364b;--blue:#355d92;--cream:#fff9e9}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#dbeff1,#f7e9cf);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}header{max-width:1160px;margin:auto;padding:18px 16px 9px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:clamp(24px,3vw,36px);margin:0;color:#244666}header p{margin:4px 0;font-size:14px}button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 17px;background:#346ba4;color:white;font-weight:800;box-shadow:0 3px 0 #24456b}button:active{transform:translateY(2px);box-shadow:0 1px 0 #24456b}button:focus-visible{outline:3px solid #ffbb45;outline-offset:2px}.wrap{max-width:1160px;margin:auto;padding:8px 16px 28px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px}.game-shell{background:#fff;padding:10px;border-radius:20px;box-shadow:0 12px 35px #34526a2b}.stage{position:relative;width:100%;aspect-ratio:12/9;overflow:hidden;border-radius:13px;background:#78b989;border:4px solid #456d65}canvas{width:100%;height:100%;display:block;image-rendering:auto}.stage-top{position:absolute;left:12px;top:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;gap:8px}.pill{background:#fff9e8eb;border:2px solid #e8d6a6;border-radius:24px;padding:7px 13px;font-weight:900;font-size:clamp(12px,1.5vw,16px)}.dialog{position:absolute;bottom:12px;left:12px;right:12px;min-height:155px;background:#fffaf0f5;border:4px solid #436e91;border-radius:18px;padding:13px 16px;box-shadow:0 7px 0 #263e5899;display:none;z-index:3}.dialog.visible{display:block}.dialog h2{margin:0 0 5px;color:#28517c;font-size:clamp(16px,2vw,22px)}.dialog p{margin:5px 0 10px;line-height:1.5;font-size:clamp(14px,1.8vw,19px);font-weight:650}.actions{display:flex;flex-wrap:wrap;gap:8px;max-height:145px;overflow:auto}.actions button{padding:8px 13px;font-size:clamp(13px,1.5vw,16px)}.actions button.alt{background:#e7f1ff;color:#28517c;box-shadow:0 2px 0 #b6cce2}.answer{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.answer input{width:125px;max-width:50%;padding:9px;border:2px solid #7892ad;border-radius:10px;font-size:18px}.tip{font-size:14px!important;color:#986015}.control-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap}.dpad{display:grid;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(2,44px);gap:5px}.dpad button{padding:4px;font-size:22px;background:#478a76;box-shadow:0 3px 0 #2c5b4e}.dpad .up{grid-column:2}.dpad .left{grid-column:1;grid-row:2}.dpad .down{grid-column:2;grid-row:2}.dpad .right{grid-column:3;grid-row:2}.talk{background:#e5a63c;box-shadow:0 3px 0 #9e6b23}.side{display:flex;flex-direction:column;gap:14px}.card{background:#fffdf8;border-radius:18px;padding:17px;box-shadow:0 8px 25px #34526a20}.card h3{margin:0 0 10px;color:#28517c}.quest{padding:9px 0;border-bottom:1px solid #e6e7df;font-size:15px}.quest.done{color:#22836a;font-weight:bold}.small{font-size:13px;color:#586879;line-height:1.6}.footer{max-width:1160px;margin:0 auto 30px;padding:0 16px;color:#556779;font-size:13px}@media(max-width:850px){.wrap{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.stage{aspect-ratio:12/10}}@media(max-width:540px){header{padding-top:10px}.stage{aspect-ratio:12/12}.dialog{left:5px;right:5px;bottom:5px;padding:9px;min-height:170px}.dialog p{font-size:14px}.side{grid-template-columns:1fr}.stage-top{left:6px;right:6px;top:6px}.pill{padding:5px 8px}.control-row{justify-content:center}}
+</style></head><body>
+<header><div><h1>🏰 算術王國：四則冒險</h1><p>探索地圖、遇見老師、學習規則、破解列式任務！</p></div><button id="reset">↻ 重玩冒險</button></header>
+<main class="wrap"><section class="game-shell"><div class="stage" id="stage"><canvas id="world" width="960" height="720" aria-label="RPG 遊戲地圖，角色可使用方向鍵移動"></canvas><div class="stage-top"><span class="pill" id="stats">⭐ 0　🪙 0</span><span class="pill" id="zone">🌿 四則村莊</span></div>
+<div class="dialog" id="dialog" role="region" aria-label="角色對話" aria-live="polite"><h2 id="speaker"></h2><p id="speech"></p><div class="actions" id="actions"></div><div id="inputArea"></div></div></div>
+<div class="control-row"><div class="dpad"><button class="up" data-move="0,-1" aria-label="上">▲</button><button class="left" data-move="-1,0" aria-label="左">◀</button><button class="down" data-move="0,1" aria-label="下">▼</button><button class="right" data-move="1,0" aria-label="右">▶</button></div><div><button class="talk" id="interact">💬 交談／互動</button> <button id="close">✕ 關閉對話</button></div></div><p class="small">🎮 方向鍵／WASD 移動；靠近 NPC 會自動對話。也可以點擊地圖上的人物。答題時可使用滑鼠或觸控操作。</p></section>
+<aside class="side"><div class="card"><h3>🎯 冒險任務</h3><div id="questList"></div><p class="small">每位老師答對2題即可過關，完成全部12題後到城堡挑戰大魔王的3道題，贏得大秘寶。</p></div><div class="card"><h3>📚 四則運算小抄</h3><p>① 有括號，先算括號。</p><p>② 先乘除，後加減。</p><p>③ 同級運算，從左到右。</p><p>④ 列併式時，先找題目中的數量與先後關係。</p><p class="small">答錯不扣分，提示會幫助你修正想法。進度會自動儲存在這台裝置。</p></div></aside></main>
+<div class="footer">教學建議：請學生在挑戰後口頭說明「為什麼這樣列式？」並比較有無括號的差別。</div>
+<script>
+(()=>{
+'use strict';
+const canvas=document.getElementById('world'),ctx=canvas.getContext('2d');
+const TILE=80,COLS=12,ROWS=9;let walkFrame=0, typingTimer=null;
+const teachers=[
+{id:'add',x:2,y:2,name:'加減精靈',emoji:'🧚',color:'#c57cce',lesson:'加法與減法是同一級，沒有括號時，從左到右算。例：36－10＋5＝31。',prompt:'36－10＋5 的答案是多少？',answer:31,hint:'先算36－10＝26，再算26＋5。',equation:'36－10＋5＝31'},
+{id:'mul',x:5,y:1,name:'乘法商人',emoji:'🧑‍🍳',color:'#e7a350',lesson:'加法和乘法一起出現時，要先算乘法。例：20＋6×4＝44。',prompt:'20＋6×4 的答案是多少？',answer:44,hint:'先算6×4＝24，再加20。',equation:'20＋6×4＝44'},
+{id:'div',x:9,y:2,name:'除法學者',emoji:'👨‍🏫',color:'#75a7e5',lesson:'乘法和除法同一級，要從左到右算。例：48÷6×2＝16。',prompt:'48÷6×2 的答案是多少？',answer:16,hint:'48÷6＝8，再乘2。',equation:'48÷6×2＝16'},
+{id:'bracket',x:3,y:6,name:'括號法師',emoji:'🧙',color:'#aa89dc',lesson:'有括號時，括號裡面先算。（20＋5）×4＝100；但20＋5×4＝40。',prompt:'（20＋5）×4 的答案是多少？',answer:100,hint:'先算括號裡的20＋5＝25。',equation:'（20＋5）×4＝100'},
+{id:'formula',x:7,y:6,name:'併式教練',emoji:'👩‍🏫',color:'#ea8098',lesson:'列併式就是把解題步驟寫成一個算式。480元買4本35元的筆記本，要先算花多少，再算剩多少。',prompt:'480元買4本每本35元的筆記本，哪個併式正確？',options:['（480－35）×4','480－35×4','480－35＋4'],correct:1,hint:'總花費是35×4，應該從480元減去總花費。',equation:'480－35×4＝340（元）'},
+{id:'life',x:9,y:7,name:'生活題村長',emoji:'👩‍🌾',color:'#83bb6a',lesson:'生活題先看「知道什麼、要算什麼、先做什麼」，再決定括號。',prompt:'120顆糖先拿走30顆，再平均分給3組，哪個併式正確？',options:['120－30÷3','（120－30）÷3','120÷3－30'],correct:1,hint:'要先拿走30顆，再把剩下的平均分成3組。',equation:'（120－30）÷3＝30（顆）'}
+];
+const QUESTION_BANK={"add": [{"story": "小華有36張貼紙，送出10張後又得到5張，現在有幾張？", "target": "36－10＋5", "answer": "31張"}, {"story": "圖書角原有48本書，借出13本，又新增9本，現在有幾本？", "target": "48－13＋9", "answer": "44本"}, {"story": "遊樂園上午進來75人，離開20人，下午又進來16人，園內有幾人？", "target": "75－20＋16", "answer": "71人"}, {"story": "小芳存了120元，花掉35元，又存入25元，現在有多少元？", "target": "120－35＋25", "answer": "110元"}, {"story": "倉庫有90箱水果，運走28箱，再送來14箱，現在有幾箱？", "target": "90－28＋14", "answer": "76箱"}], "mul": [{"story": "小美原有20顆糖，另外買4包，每包6顆，現在共有幾顆？", "target": "20＋4×6", "answer": "44顆"}, {"story": "教室原有18枝彩筆，老師又買5盒，每盒8枝，共有幾枝？", "target": "18＋5×8", "answer": "58枝"}, {"story": "園丁先種12株花，再種6排，每排7株，共種幾株？", "target": "12＋6×7", "answer": "54株"}, {"story": "書店原有25本故事書，又送來3箱，每箱9本，共有幾本？", "target": "25＋3×9", "answer": "52本"}, {"story": "阿哲有40張卡片，朋友再送4包，每包12張，共有幾張？", "target": "40＋4×12", "answer": "88張"}], "div": [{"story": "48顆彈珠平均分成6袋，取出其中2袋，共有幾顆？", "target": "48÷6×2", "answer": "16顆"}, {"story": "72顆糖平均裝成9包，買3包共有幾顆？", "target": "72÷9×3", "answer": "24顆"}, {"story": "60枝鉛筆平均裝成5盒，取4盒共有幾枝？", "target": "60÷5×4", "answer": "48枝"}, {"story": "96張卡片平均分成8疊，取3疊共有幾張？", "target": "96÷8×3", "answer": "36張"}, {"story": "84個橘子平均裝成7籃，取5籃共有幾個？", "target": "84÷7×5", "answer": "60個"}], "bracket": [{"story": "每盒彩球有20顆紅球和5顆藍球，買4盒共有幾顆？", "target": "（20＋5）×4", "answer": "100顆"}, {"story": "每袋有12顆蘋果和8顆梨子，買3袋共有幾顆水果？", "target": "（12＋8）×3", "answer": "60顆"}, {"story": "每組有15位男生和10位女生，4組共有幾人？", "target": "（15＋10）×4", "answer": "100人"}, {"story": "每盒彩筆有18枝紅筆和6枝藍筆，5盒共有幾枝？", "target": "（18＋6）×5", "answer": "120枝"}, {"story": "每盤有9塊蛋糕和7塊餅乾，6盤共有幾份點心？", "target": "（9＋7）×6", "answer": "96份"}], "formula": [{"story": "小明有480元，買4本每本35元的筆記本，還剩多少元？", "target": "480－35×4", "answer": "340元"}, {"story": "小琪有300元，買5枝每枝28元的筆，還剩多少元？", "target": "300－28×5", "answer": "160元"}, {"story": "班費有600元，買8盒彩色筆，每盒45元，還剩多少元？", "target": "600－45×8", "answer": "240元"}, {"story": "阿宏有250元，買3張每張60元的票，還剩多少元？", "target": "250－60×3", "answer": "70元"}, {"story": "媽媽有1000元，買6盒每盒125元的點心，還剩多少元？", "target": "1000－125×6", "answer": "250元"}], "life": [{"story": "120顆糖先拿走30顆，再把剩下的平均分給3組，每組幾顆？", "target": "（120－30）÷3", "answer": "30顆"}, {"story": "有96張紙，先用掉24張，再平均分給6人，每人幾張？", "target": "（96－24）÷6", "answer": "12張"}, {"story": "有150顆球，先拿走30顆，剩下的平均裝進5袋，每袋幾顆？", "target": "（150－30）÷5", "answer": "24顆"}, {"story": "有84塊餅乾，先吃掉12塊，再平均分成4盒，每盒幾塊？", "target": "（84－12）÷4", "answer": "18塊"}, {"story": "有200本書，先捐出40本，再平均放到8個書架，每架幾本？", "target": "（200－40）÷8", "answer": "20本"}], "boss": [{"story": "魔王有900枚金幣，買7把每把85枚的寶劍，剩下幾枚？", "target": "900－85×7", "answer": "305枚"}, {"story": "魔王收集了180顆寶石，先用掉36顆，再平均放進6個寶箱，每箱幾顆？", "target": "（180－36）÷6", "answer": "24顆"}, {"story": "每座塔有18名弓箭手和12名騎士，魔王有5座塔，總共有幾名守衛？", "target": "（18＋12）×5", "answer": "150名"}]};
+const rocks=new Set(['0,0','1,0','0,8','11,8','6,3','6,4','5,4','0,4','11,4','4,8','5,8']);
+const castle={x:10,y:0};let player={x:1,y:4},done=new Set(),xp=0,coins=0,active=null,nearId=null,progress={},bossIndex=0,treasure=false;
+const $=id=>document.getElementById(id);
+function persist(){try{localStorage.setItem('arithKingdomV2',JSON.stringify({player,done:[...done],xp,coins,progress,bossIndex,treasure}))}catch(e){}}
+function restore(){try{let s=JSON.parse(localStorage.getItem('arithKingdomV2'));if(s){if(s.player&&Number.isInteger(s.player.x)&&Number.isInteger(s.player.y))player=s.player;done=new Set(s.done||[]);xp=s.xp||0;coins=s.coins||0;progress=s.progress||{};bossIndex=s.bossIndex||0;treasure=!!s.treasure}}catch(e){}}
+function rounded(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=3;ctx.stroke()}}
+function character(x,y,color,emoji,main=false){
+const px=x*TILE+40,py=y*TILE+40,step=main?(walkFrame%2?3:-3):0;
+ctx.fillStyle='#263b4850';ctx.beginPath();ctx.ellipse(px,py+30,27,8,0,0,Math.PI*2);ctx.fill();
+const blocks=[
+[-15,14,12,17,'#34495e'],[3,14,12,17,'#34495e'],
+[-22,-6,44,26,color],[-29,-4,9,20,'#f3c99d'],[20,-4,9,20,'#f3c99d'],
+[-19,-36,38,33,'#f3c99d'],[-22,-42,44,12,main?'#d8a436':'#4e526c'],
+[-11,-20,5,5,'#263b48'],[7,-20,5,5,'#263b48'],[-5,-9,10,3,'#b45f68']];
+blocks.forEach(([dx,dy,w,h,c],i)=>{let yy=dy+(i<2?step:0);ctx.fillStyle=c;ctx.fillRect(px+dx,py+yy,w,h)});
+ctx.fillStyle='#ffffff';ctx.fillRect(px-15,py-39,6,4);ctx.fillRect(px+9,py-39,6,4);
+if(main){ctx.fillStyle='#ffdf73';ctx.fillRect(px-12,py-53,24,9);ctx.fillRect(px-17,py-59,10,10);ctx.fillRect(px+7,py-59,10,10)}
+else{rounded(px-34,py-69,68,21,6,'#fff9e8','#42697e');ctx.font='bold 12px sans-serif';ctx.fillStyle='#2b4659';ctx.textAlign='center';let n=teachers.find(t=>t.x===x&&t.y===y);ctx.fillText(n?n.name:'',px,py-58);if(done.has(n?.id)){ctx.font='19px sans-serif';ctx.fillText('⭐',px+29,py-37)}}
+} 
+function draw(){ctx.clearRect(0,0,960,720);for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){let xx=x*TILE,yy=y*TILE;ctx.fillStyle=(x+y)%2?'#9bd49a':'#a9dea1';ctx.fillRect(xx,yy,TILE,TILE);ctx.strokeStyle='#ffffff20';ctx.strokeRect(xx,yy,TILE,TILE);if((x*11+y*7)%9===0){ctx.fillStyle='#f5df7a';ctx.beginPath();ctx.arc(xx+17,yy+60,4,0,7);ctx.fill()}if(rocks.has(`${x},${y}`)){ctx.font='57px serif';ctx.textAlign='center';ctx.fillText('🌳',xx+40,yy+58)}}ctx.fillStyle='#d9c49a';for(let x=0;x<COLS;x++)for(let y=0;y<ROWS;y++){if((y===4||x===1||x===10)&&!rocks.has(`${x},${y}`)){ctx.globalAlpha=.34;rounded(x*TILE+5,y*TILE+6,70,68,12,'#f2ddad');ctx.globalAlpha=1}}ctx.font='63px serif';ctx.textAlign='center';ctx.fillText(done.size===6&&!treasure?'👹':treasure?'💎':'🏰',castle.x*TILE+40,castle.y*TILE+61);teachers.forEach(t=>character(t.x,t.y,t.color,t.emoji));character(player.x,player.y,'#477fbb','🧑‍🚀',true)}
+function ui(){draw();$('stats').textContent=`⭐ ${xp}　🪙 ${coins}　🏅 ${done.size}/6`+(treasure?'　💎 大秘寶':'');$('questList').innerHTML=teachers.map(t=>`<div class="quest ${done.has(t.id)?'done':''}">${done.has(t.id)?'✅':'⬜'} ${t.name}</div>`).join('')}
+function show(name,text){clearInterval(typingTimer);$('dialog').classList.add('visible');$('speaker').textContent=name;$('speech').textContent='';$('actions').replaceChildren();$('inputArea').replaceChildren();let chars=Array.from(text),i=0;typingTimer=setInterval(()=>{i=Math.min(chars.length,i+3);$('speech').textContent=chars.slice(0,i).join('');if(i>=chars.length)clearInterval(typingTimer)},18)}
+function close(){clearInterval(typingTimer);active=null;$('dialog').classList.remove('visible')}
+function button(label,fn,alt=false){const b=document.createElement('button');b.textContent=label;if(alt)b.className='alt';b.addEventListener('click',fn);$('actions').append(b)}
+function greet(t){active=t;show(t.emoji+' '+t.name,t.lesson+'　目前完成：'+(progress[t.id]||0)+'/2 題。');button('📖 生活題併式拼圖',()=>builder(t));button('📝 計算練習',()=>ask(t),true);button('📚 列式技巧',()=>explain(t),true);button('稍後再來',close,true)}
+function explain(t){show('📖 '+t.name+'的列式筆記','第一步：圈出已知數量。第二步：確認先做的運算。第三步：需要先算的部分用括號表示。第四步：寫成一個併式並檢查單位。例題：'+t.equation);button('開始生活題拼圖',()=>builder(t));button('返回對話',()=>greet(t),true)}
+function builder(t){
+const idx=Math.min(progress[t.id]||0,1);
+const task=QUESTION_BANK[t.id][idx];
+show('🧱 '+t.name+'：第'+(idx+1)+'/2題','📖 '+task.story+' 請點選數字與運算符號，拼出併式。');
+let built=[],mistakes=0;
+const output=document.createElement('div');output.style.cssText='font-size:clamp(16px,2vw,22px);font-weight:900;padding:8px;background:#edf5ff;border-radius:8px;color:#28517c;margin-bottom:6px;overflow-wrap:anywhere';$('inputArea').append(output);
+const pad=document.createElement('div');pad.className='actions';pad.style.marginBottom='8px';$('inputArea').append(pad);
+function update(){output.textContent='你的併式：'+(built.join('')||'＿＿＿＿')}update();
+const tokens=[...new Set([...task.target.match(/\d+|[＋－×÷（）]/g),...['＋','－','×','÷','（','）']])];
+for(let i=tokens.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tokens[i],tokens[j]]=[tokens[j],tokens[i]];}
+tokens.forEach(token=>{let b=document.createElement('button');b.textContent=token;b.className='alt';b.onclick=()=>{built.push(token);update()};pad.append(b)});
+button('✅ 檢查併式',()=>{
+if(built.join('')===task.target){
+if((progress[t.id]||0)===idx){progress[t.id]=idx+1;xp+=20;coins+=10;if(progress[t.id]===2)done.add(t.id);persist()}
+show('🎉 第'+(idx+1)+'題成功！',task.target+'＝'+task.answer+'。'+(progress[t.id]===2?'你已完成這位老師的兩題任務！':'再接再厲，繼續下一題！'));
+if(progress[t.id]<2)button('➡️ 下一題',()=>builder(t));else button('繼續冒險',close);
+button('回到老師',()=>greet(t),true);ui()
+}else{mistakes++;$('speech').textContent=mistakes===1?'算式還不正確。請先想題目中哪個步驟要先做。':'提示：'+t.hint}
+});
+button('↶ 撤銷',()=>{built.pop();update()},true);
+button('清除',()=>{built=[];update()},true);
+button('💡 提示',()=>{$('speech').textContent='先找出數量與先後關係。'+t.hint},true);
+button('返回老師',()=>greet(t),true)
+}
+function ask(t){show('🧩 '+t.name+'的挑戰',t.prompt);let attempts=0;if(t.options){t.options.forEach((opt,i)=>button(`${'ABC'[i]}. ${opt}`,()=>check(i)))}else{let box=document.createElement('div');box.className='answer';let input=document.createElement('input');input.type='number';input.placeholder='輸入答案';input.setAttribute('aria-label','輸入答案');let submit=document.createElement('button');submit.textContent='確認答案';submit.onclick=()=>{if(input.value.trim())check(Number(input.value))};input.onkeydown=e=>{if(e.key==='Enter')submit.click()};box.append(input,submit);$('inputArea').append(box)}
+button('💡 提示',()=>{$('speech').textContent=t.prompt+'　提示：'+t.hint},true);
+function check(value){if(value===(t.options?t.correct:t.answer)){const first=!done.has(t.id);if(first){done.add(t.id);xp+=50;coins+=20;persist()}show('🎉 挑戰成功！',`答對了！${t.equation}。${first?'獲得 50 經驗值和 20 金幣！':'這題已經完成，再練習也很棒！'}`);button('再練習一次',()=>ask(t),true);button('繼續探索',close);ui()}else{attempts++;$('speech').textContent=attempts===1?'再想想運算順序！你可以先看提示。':'試試這個方向：'+t.hint}}
+}
+function castleTalk(){
+active='castle';
+if(treasure){show('💎 大秘寶已獲得！','恭喜！你打敗大魔王，獲得傳說中的「智慧星鑽」！你是四則運算冒險王！');button('繼續探索',close);return}
+if(done.size<6){show('🏰 智慧城堡','六位老師各答對2題即可過關。你已完成 '+done.size+'/6 位老師，請先完成全部12題，大魔王才會現身！');button('繼續探索',close);return}
+show('👹 大魔王現身！','你完成了12題挑戰！大魔王出現了！他將連續出3道生活應用題。全部答對即可取得大秘寶！目前進度：'+bossIndex+'/3');
+button('⚔️ 挑戰大魔王',bossQuestion);button('先準備一下',close,true)
+}
+function shuffleTiles(items){for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}return items}
+function bossQuestion(){
+if(bossIndex>=3){treasure=true;persist();show('💎 傳說大秘寶！','恭喜！你連續破解魔王的三道關卡，獲得「智慧星鑽」大秘寶！');button('🏆 領取稱號',()=>{show('🏆 四則運算冒險王','你已完成12道老師任務和3道魔王題，成為四則運算冒險王！');button('繼續探索',close)});ui();return}
+const task=QUESTION_BANK.boss[bossIndex];show('👹 大魔王：第'+(bossIndex+1)+'/3關',task.story+' 請拼出正確併式！');
+let built=[];const output=document.createElement('div');output.style.cssText='font-size:21px;font-weight:bold;padding:8px;background:#f5e6fa;border-radius:8px';$('inputArea').append(output);
+const pad=document.createElement('div');pad.className='actions';$('inputArea').append(pad);
+function update(){output.textContent='你的併式：'+(built.join('')||'＿＿＿＿')}update();
+shuffleTiles([...new Set([...task.target.match(/\d+|[＋－×÷（）]/g),...['＋','－','×','÷','（','）']])]).forEach(token=>{const b=document.createElement('button');b.textContent=token;b.className='alt';b.onclick=()=>{built.push(token);update()};pad.append(b)});
+button('⚔️ 提交答案',()=>{if(built.join('')===task.target){bossIndex++;xp+=100;coins+=50;persist();if(bossIndex===3)bossQuestion();else{show('⚔️ 成功擊破！',task.target+'＝'+task.answer+'！魔王還有'+(3-bossIndex)+'道題。');button('➡️ 下一關',bossQuestion)}ui()}else{$('speech').textContent='魔王說：還沒答對！請檢查先後順序與括號，再試一次。'}});
+button('↶ 撤銷',()=>{built.pop();update()},true);button('清除',()=>{built=[];update()},true);
+button('暫時離開',close,true)
+}
+function adjacent(t){return Math.abs(t.x-player.x)+Math.abs(t.y-player.y)<=1}
+function interact(){let t=teachers.find(adjacent);if(t)greet(t);else if(Math.abs(player.x-castle.x)+Math.abs(player.y-castle.y)<=1)castleTalk();else{show('🧭 探索提示','請走近地圖上的大人物 NPC，學習運算規則並接受挑戰。');button('我知道了',close)}}
+function move(dx,dy){if($('dialog').classList.contains('visible'))close();const x=player.x+dx,y=player.y+dy;if(x<0||x>=COLS||y<0||y>=ROWS||rocks.has(`${x},${y}`)||teachers.some(t=>t.x===x&&t.y===y)||x===castle.x&&y===castle.y)return;player={x,y};walkFrame++;persist();ui();let t=teachers.find(adjacent);if(t){if(nearId!==t.id){nearId=t.id;greet(t)}}else if(Math.abs(x-castle.x)+Math.abs(y-castle.y)<=1){nearId='castle';castleTalk()}else nearId=null}
+document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>{let [x,y]=b.dataset.move.split(',').map(Number);move(x,y)});
+$('interact').onclick=interact;$('close').onclick=close;
+$('reset').onclick=()=>{if(confirm('確定清除進度，重新開始嗎？')){try{localStorage.removeItem('arithKingdomV2')}catch(e){}player={x:1,y:4};done=new Set();xp=coins=0;progress={};bossIndex=0;treasure=false;nearId=null;close();ui()}};
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};if(m[e.key]){e.preventDefault();move(...m[e.key])}else if(e.key===' '||e.key==='e'||e.key==='E'){e.preventDefault();interact()}else if(e.key==='Escape')close()});
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*COLS),y=Math.floor((e.clientY-r.top)/r.height*ROWS);const t=teachers.find(t=>t.x===x&&t.y===y);if(t)greet(t);else if(x===castle.x&&y===castle.y)castleTalk()});
+restore();ui();show('👑 國王的邀請','歡迎來到算術王國！地圖上的人物都很大，靠近老師時，對話會直接出現在遊戲畫面中。每位老師答對2道生活題，全部完成後，城堡會出現大魔王！');button('開始冒險',close);
+})();
+</script></body></html>
